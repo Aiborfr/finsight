@@ -10,7 +10,7 @@
 
 ---
 
-![FinSight Dashboard](https://via.placeholder.com/900x480?text=FinSight+Dashboard+Screenshot)
+![FinSight Dashboard](docs/screenshot.png)
 
 ---
 
