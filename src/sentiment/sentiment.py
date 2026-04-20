@@ -8,8 +8,18 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 # Carga las variables de entorno desde el archivo .env en la raíz del proyecto
 load_dotenv(Path(__file__).parents[2] / ".env")
 
-# Lee la clave de NewsAPI desde el entorno
-NEWSAPI_KEY = os.getenv("NEWSAPI_KEY")
+# Lee la clave de NewsAPI: primero del entorno/.env, luego de st.secrets si está en Streamlit Cloud
+def _leer_api_key() -> str | None:
+    key = os.getenv("NEWSAPI_KEY")
+    if key:
+        return key
+    try:
+        import streamlit as st
+        return st.secrets.get("NEWSAPI_KEY")
+    except Exception:
+        return None
+
+NEWSAPI_KEY = _leer_api_key()
 
 # URL base de la API de NewsAPI
 NEWSAPI_URL = "https://newsapi.org/v2/everything"

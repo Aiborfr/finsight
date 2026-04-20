@@ -3,14 +3,32 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
+# Importa los módulos del proyecto para regenerar datos si no existen
+from src.screener.screener import descargar_precios, guardar_csv, ETFS
+from src.screener.metrics  import calcular_metricas, guardar_metricas
+from src.sentiment.sentiment import analizar_todos, guardar_csv as guardar_sentimiento
+
 # ── Configuración de página ──────────────────────────────────────────────────
 st.set_page_config(page_title="FinSight", page_icon="📊", layout="wide")
 
 # ── Rutas de datos ───────────────────────────────────────────────────────────
-ROOT = Path(__file__).parent
-PRECIOS_PATH    = ROOT / "data" / "raw"       / "etf_prices.csv"
-METRICAS_PATH   = ROOT / "data" / "processed" / "etf_metrics.csv"
+ROOT             = Path(__file__).parent
+PRECIOS_PATH     = ROOT / "data" / "raw"       / "etf_prices.csv"
+METRICAS_PATH    = ROOT / "data" / "processed" / "etf_metrics.csv"
 SENTIMIENTO_PATH = ROOT / "data" / "processed" / "sentiment_scores.csv"
+
+# ── Generación automática de datos si no existen los CSV ─────────────────────
+if not PRECIOS_PATH.exists() or not METRICAS_PATH.exists():
+    with st.spinner("Descargando datos historicos de precios (esto puede tardar ~30s)..."):
+        precios_df = descargar_precios(ETFS)
+        guardar_csv(precios_df, PRECIOS_PATH)
+        metricas_df = calcular_metricas(precios_df)
+        guardar_metricas(metricas_df, METRICAS_PATH)
+
+if not SENTIMIENTO_PATH.exists():
+    with st.spinner("Analizando sentimiento de noticias..."):
+        sentimiento_df = analizar_todos(ETFS)
+        guardar_sentimiento(sentimiento_df, SENTIMIENTO_PATH)
 
 # ── Carga de datos ───────────────────────────────────────────────────────────
 @st.cache_data
